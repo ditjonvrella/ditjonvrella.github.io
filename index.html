@@ -1116,9 +1116,9 @@ function meter(label, ist, soll, fmt, sub, key) {
 const sgn = (v, d) => v === null || v === undefined ? '–' : (v > 0 ? '+' : v < 0 ? '−' : '±') + N(Math.abs(v), d);
 /** Das Urteil der Woche in einem Satz: Gewicht gegen Ideal, dazu nur die Abweichungen (größte zuerst). */
 function verdict(w, m) {
-  const i = w.ist, s = w.soll, items = [];
-  const put = (lab, ist, soll) => { const j = C.judge(ist, soll); if (j) items.push({ lab: lab, j: j, dev: (ist / soll - 1) * 100 }); };
-  if (m.nutrition) { put('Kalorien', i.kcal, s.kcal); put('Protein', i.p, s.p); }
+  const i = w.ist, s = w.soll, items = [], miss = [];
+  const put = (lab, ist, soll) => { if (!P(soll)) return; const j = C.judge(ist, soll); if (j) items.push({ lab: lab, j: j, dev: (ist / soll - 1) * 100 }); else if (ist === null || ist === undefined) miss.push(lab); };
+  if (m.nutrition) { put('Kalorien', i.kcal, s.kcal); put('Protein', i.p, s.p); put('Kohlenhydrate', i.kh, s.kh); put('Fett', i.f, s.f); }
   put('Schritte', i.steps, s.steps); put('Schlaf', i.sleep, s.sleep);
   const off = items.filter(x => x.j === 'off').sort((a, b) => Math.abs(b.dev) - Math.abs(a.dev)), ok = items.filter(x => x.j === 'ok');
   const st = w.state || {}, dir = st.block && !st.pause && !st.auto ? C.dirSign(st.block.typ) : 0, dw = w.delta, jw = C.judge(i.w, s.w, 'w');
@@ -1126,7 +1126,7 @@ function verdict(w, m) {
   const head = i.w === null || dw === null ? 'Noch kein Gewicht in dieser Woche' : jw === 'ok' ? 'Gewicht liegt auf der Ideal-Kurve' : N(Math.abs(dw), 1) + ' kg ' + (ahead ? 'dem Plan voraus' : (dw > 0 ? 'über' : 'unter') + ' dem Ideal');
   const cls = i.w === null || dw === null ? '' : jw === 'ok' || ahead ? 'ok' : 'off';
   return `<div class="card verdict ${cls}"><div class="vh">${head}</div>
-    <div class="vl">${off.map(x => `<span class="vd off">${x.lab} ${sgn(Math.round(x.dev), 0)} %</span>`).join('')}${ok.length ? `<span class="vd">Im Rahmen: ${ok.map(x => x.lab).join(', ')}</span>` : ''}${items.length ? '' : '<span class="vd">Noch keine Einträge zum Vergleichen.</span>'}</div></div>`;
+    <div class="vl">${off.map(x => `<span class="vd off">${x.lab} ${sgn(Math.round(x.dev), 0)} %</span>`).join('')}${ok.length ? `<span class="vd">Im Rahmen: ${ok.map(x => x.lab).join(', ')}</span>` : ''}${miss.length ? `<span class="vd muted">Noch keine Einträge: ${miss.join(', ')}</span>` : ''}${items.length || miss.length ? '' : '<span class="vd">Noch keine Einträge zum Vergleichen.</span>'}</div></div>`;
 }
 function tabWeek() {
   const { p, days, pl, ideals, kNow, weeks } = ctx();

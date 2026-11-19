@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="de"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Coaching</title><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#0D1117"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Coaching">
+<title>Coaching</title><link rel="manifest" href="manifest.webmanifest?v=2.4.4"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#0D1117"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Coaching">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
 <style>
 :root{
@@ -368,10 +368,10 @@ button.ic:has(.ico:only-child){padding:5px 6px} .handle .ico{width:16px;height:1
 </style></head>
 <body>
 <div id="app"><div class="center"><div class="spin" aria-label="Lädt"></div></div></div>
-<script>(function(){var A=/\/coach\//.test(location.pathname)?'coach':'athlet',S='coaching-zugang-'+A,ZL='coaching-zugaenge-'+A,h=new URLSearchParams(location.hash.slice(1)),q=new URLSearchParams(location.search),k=h.get('k')||q.get('k'),c=h.get('coach')||q.get('coach');
+<script>(function(){var A=/\/coaching\//.test(location.pathname)?'coach':'athlet',S='coaching-zugang-'+A,ZL='coaching-zugaenge-'+A,h=new URLSearchParams(location.hash.slice(1)),q=new URLSearchParams(location.search),k=h.get('k')||q.get('k'),c=h.get('coach')||q.get('coach');
 if(q.get('k')||q.get('coach'))history.replaceState(null,'',location.pathname+'#'+(c?'coach='+c:'k='+k));
 if(k||c){try{localStorage.setItem(S,JSON.stringify({k:k,c:c}));var L=JSON.parse(localStorage.getItem(ZL)||'[]'),key=c||k;if(!L.some(function(x){return x.key===key}))L.push({t:c?'coach':'k',key:key});localStorage.setItem(ZL,JSON.stringify(L))}catch(e){}}else{try{var s=JSON.parse(localStorage.getItem(S)||'null');if(s){k=s.k;c=s.c}}catch(e){}}
-var b={url:"https://script.google.com/macros/s/AKfycbwpixdlX2r63QFM-tyJAu-kmKOuDXerJZbf7whJlng1m8XPS75qWWd-bSGf48vBlWWK6w/exec",web:"https://ditjonvrella.github.io/",api:"https://script.google.com/macros/s/AKfycbwpixdlX2r63QFM-tyJAu-kmKOuDXerJZbf7whJlng1m8XPS75qWWd-bSGf48vBlWWK6w/exec",v:"2.4.3"};
+var b={url:"https://script.google.com/macros/s/AKfycbwpixdlX2r63QFM-tyJAu-kmKOuDXerJZbf7whJlng1m8XPS75qWWd-bSGf48vBlWWK6w/exec",web:"https://ditjonvrella.github.io/",api:"https://script.google.com/macros/s/AKfycbwpixdlX2r63QFM-tyJAu-kmKOuDXerJZbf7whJlng1m8XPS75qWWd-bSGf48vBlWWK6w/exec",v:"2.4.4"};
 b.mode=c?'coach':k?'athlete':'none';b.key=c||k||'';b.zl=ZL;b.app=A;window.BOOT=b;})();</script>
 <script>
 /* Coaching App – Rechenkern (läuft im Browser und in den Node-Tests). Keine DOM-Zugriffe.

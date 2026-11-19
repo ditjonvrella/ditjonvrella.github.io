@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="de"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Coach</title><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#0D1117"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Coach">
+<title>Coaching</title><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#0D1117"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Coaching">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
 <style>
 :root{
@@ -371,7 +371,7 @@ button.ic:has(.ico:only-child){padding:5px 6px} .handle .ico{width:16px;height:1
 <script>(function(){var A=/\/coach\//.test(location.pathname)?'coach':'athlet',S='coaching-zugang-'+A,ZL='coaching-zugaenge-'+A,h=new URLSearchParams(location.hash.slice(1)),q=new URLSearchParams(location.search),k=h.get('k')||q.get('k'),c=h.get('coach')||q.get('coach');
 if(q.get('k')||q.get('coach'))history.replaceState(null,'',location.pathname+'#'+(c?'coach='+c:'k='+k));
 if(k||c){try{localStorage.setItem(S,JSON.stringify({k:k,c:c}));var L=JSON.parse(localStorage.getItem(ZL)||'[]'),key=c||k;if(!L.some(function(x){return x.key===key}))L.push({t:c?'coach':'k',key:key});localStorage.setItem(ZL,JSON.stringify(L))}catch(e){}}else{try{var s=JSON.parse(localStorage.getItem(S)||'null');if(s){k=s.k;c=s.c}}catch(e){}}
-var b={url:"https://script.google.com/macros/s/AKfycbwpixdlX2r63QFM-tyJAu-kmKOuDXerJZbf7whJlng1m8XPS75qWWd-bSGf48vBlWWK6w/exec",web:"https://ditjonvrella.github.io/",api:"https://script.google.com/macros/s/AKfycbwpixdlX2r63QFM-tyJAu-kmKOuDXerJZbf7whJlng1m8XPS75qWWd-bSGf48vBlWWK6w/exec",v:"2.4.2"};
+var b={url:"https://script.google.com/macros/s/AKfycbwpixdlX2r63QFM-tyJAu-kmKOuDXerJZbf7whJlng1m8XPS75qWWd-bSGf48vBlWWK6w/exec",web:"https://ditjonvrella.github.io/",api:"https://script.google.com/macros/s/AKfycbwpixdlX2r63QFM-tyJAu-kmKOuDXerJZbf7whJlng1m8XPS75qWWd-bSGf48vBlWWK6w/exec",v:"2.4.3"};
 b.mode=c?'coach':k?'athlete':'none';b.key=c||k||'';b.zl=ZL;b.app=A;window.BOOT=b;})();</script>
 <script>
 /* Coaching App – Rechenkern (läuft im Browser und in den Node-Tests). Keine DOM-Zugriffe.
@@ -870,6 +870,15 @@ const alink = tok => BOOT.web ? BOOT.web + '#k=' + tok : BOOT.url + '?k=' + tok;
 const ZK = BOOT && BOOT.zl || 'coaching-zugaenge';
 function zList() { try { return JSON.parse(localStorage.getItem(ZK) || '[]'); } catch (e) { return []; } }
 function zName(n) { if (!BOOT.web) return; const l = zList(), e = l.find(x => x.key === BOOT.key); if (e && e.name !== n) { e.name = n; try { localStorage.setItem(ZK, JSON.stringify(l)); } catch (x) {} } }
+/** Athleten-App heißt „Coaching <Name>“: Titel, iOS-Titel und Manifest (als data:-URL) werden nach dem Laden gesetzt. */
+function appName(first) {
+  if (!BOOT.web || BOOT.app === 'coach' || !first) return; const n = 'Coaching ' + first;
+  if (document.title === n) return; document.title = n;
+  const t = document.querySelector('meta[name="apple-mobile-web-app-title"]'); if (t) t.content = n;
+  const b = BOOT.web, m = { id: '/', name: n, short_name: n, start_url: b, scope: b, display: 'standalone', background_color: '#0D1117', theme_color: '#0D1117', lang: 'de',
+    icons: [192, 512].map(s => ({ src: b + 'icon-' + s + '.png', sizes: s + 'x' + s, type: 'image/png', purpose: 'any maskable' })) };
+  const l = document.querySelector('link[rel="manifest"]'); if (l) l.href = 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(m));
+}
 function zSwitch() { if (!BOOT.web) return ''; const l = zList(); if (l.length < 2) return '';
   return `<select id="zsw" class="zsw" aria-label="Ansicht wechseln">${l.map(x => `<option value="${x.t}=${esc(x.key)}" ${x.key === BOOT.key ? 'selected' : ''}>${esc(x.name || (x.t === 'coach' ? 'Coach' : 'Athlet'))}</option>`).join('')}</select>`; }
 document.addEventListener('change', e => { if (e.target && e.target.id === 'zsw') { e.stopPropagation(); location.hash = e.target.value; location.reload(); } }, true);
@@ -1928,7 +1937,7 @@ function aRender() {
   if (!tabs.some(t => t[0] === AS.tab)) AS.tab = tabs.length ? tabs[0][0] : '';
   const nb = (k, t) => `<button data-a="tab" data-v="${k}" aria-pressed="${AS.tab === k}">${ico({ heute: 'edit', food: 'food', train: 'gym', hist: 'chart' }[k] || 'note')}<span>${t}</span></button>`;
   const body = ({ heute: aToday, food: aFood, train: aTrain, hist: aHist }[AS.tab] || (() => '<div class="card muted">Dein Coach richtet gerade alles ein.</div>'))();
-  zName(first || 'Athlet');
+  zName(first || 'Athlet'); appName(first);
   paint(`<div class="page"><div class="hd"><div class="row" style="align-items:flex-start"><div><div class="small muted">${fd(TODAY)}${p.modules.monitoring && st.label ? ' · ' + esc(st.label) : ''}</div><h1>Hallo ${esc(first)}</h1></div><span class="sp"></span>${zSwitch()}</div></div>
     <div class="bd">${body}</div>${tabs.length > 1 ? `<nav class="nav"><div style="--n:${tabs.length}">${tabs.map(t => nb(t[0], t[1])).join('')}</div></nav>` : ''}</div>`);
   const ds = root.querySelector('.days'); if (ds) { ds.scrollLeft = ds.scrollWidth; const sb = ds.querySelector('[aria-pressed="true"]'); if (sb && sb.offsetLeft < ds.scrollLeft) ds.scrollLeft = sb.offsetLeft - 8; }

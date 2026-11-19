@@ -1,7 +1,7 @@
 {
   "id": "/coach/",
-  "name": "Coach",
-  "short_name": "Coach",
+  "name": "Coaching",
+  "short_name": "Coaching",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

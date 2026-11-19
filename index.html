@@ -362,13 +362,16 @@ button.ic:has(.ico:only-child){padding:5px 6px} .handle .ico{width:16px;height:1
 .days.wk button{min-width:0;padding:8px 2px;font-size:11.5px}
 .days.wk button.td:not([aria-pressed="true"]){border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
 .days.wk button:disabled{opacity:.35}
+/* 2.4.1 Umschalter Coach/Athlet */
+.zsw{width:auto;max-width:150px;padding:6px 10px;font-size:13px;border-radius:999px}
+
 </style></head>
 <body>
 <div id="app"><div class="center"><div class="spin" aria-label="Lädt"></div></div></div>
 <script>(function(){var S='coaching-zugang',h=new URLSearchParams(location.hash.slice(1)),q=new URLSearchParams(location.search),k=h.get('k')||q.get('k'),c=h.get('coach')||q.get('coach');
 if(q.get('k')||q.get('coach'))history.replaceState(null,'',location.pathname+'#'+(c?'coach='+c:'k='+k));
-if(k||c){try{localStorage.setItem(S,JSON.stringify({k:k,c:c}))}catch(e){}}else{try{var s=JSON.parse(localStorage.getItem(S)||'null');if(s){k=s.k;c=s.c}}catch(e){}}
-var b={url:"https://script.google.com/macros/s/AKfycbwpixdlX2r63QFM-tyJAu-kmKOuDXerJZbf7whJlng1m8XPS75qWWd-bSGf48vBlWWK6w/exec",web:"https://ditjonvrella.github.io/",api:"https://script.google.com/macros/s/AKfycbwpixdlX2r63QFM-tyJAu-kmKOuDXerJZbf7whJlng1m8XPS75qWWd-bSGf48vBlWWK6w/exec",v:"2.4.0"};
+if(k||c){try{localStorage.setItem(S,JSON.stringify({k:k,c:c}));var L=JSON.parse(localStorage.getItem('coaching-zugaenge')||'[]'),key=c||k;if(!L.some(function(x){return x.key===key}))L.push({t:c?'coach':'k',key:key});localStorage.setItem('coaching-zugaenge',JSON.stringify(L))}catch(e){}}else{try{var s=JSON.parse(localStorage.getItem(S)||'null');if(s){k=s.k;c=s.c}}catch(e){}}
+var b={url:"https://script.google.com/macros/s/AKfycbwpixdlX2r63QFM-tyJAu-kmKOuDXerJZbf7whJlng1m8XPS75qWWd-bSGf48vBlWWK6w/exec",web:"https://ditjonvrella.github.io/",api:"https://script.google.com/macros/s/AKfycbwpixdlX2r63QFM-tyJAu-kmKOuDXerJZbf7whJlng1m8XPS75qWWd-bSGf48vBlWWK6w/exec",v:"2.4.1"};
 b.mode=c?'coach':k?'athlete':'none';b.key=c||k||'';window.BOOT=b;})();</script>
 <script>
 /* Coaching App – Rechenkern (läuft im Browser und in den Node-Tests). Keine DOM-Zugriffe.
@@ -863,6 +866,13 @@ function toast(msg, undoFn) {
 }
 /** Athleten-Link: neue Web-Adresse (Schlüssel hinter #, geht nicht an den Server von GitHub), sonst Google-Adresse. */
 const alink = tok => BOOT.web ? BOOT.web + '#k=' + tok : BOOT.url + '?k=' + tok;
+/* Mehrere Zugänge auf einem Gerät (z. B. Coach + eigener Athlet): Liste in localStorage, Umschalter oben. */
+const ZK = 'coaching-zugaenge';
+function zList() { try { return JSON.parse(localStorage.getItem(ZK) || '[]'); } catch (e) { return []; } }
+function zName(n) { if (!BOOT.web) return; const l = zList(), e = l.find(x => x.key === BOOT.key); if (e && e.name !== n) { e.name = n; try { localStorage.setItem(ZK, JSON.stringify(l)); } catch (x) {} } }
+function zSwitch() { if (!BOOT.web) return ''; const l = zList(); if (l.length < 2) return '';
+  return `<select id="zsw" class="zsw" aria-label="Ansicht wechseln">${l.map(x => `<option value="${x.t}=${esc(x.key)}" ${x.key === BOOT.key ? 'selected' : ''}>${esc(x.name || (x.t === 'coach' ? 'Coach' : 'Athlet'))}</option>`).join('')}</select>`; }
+document.addEventListener('change', e => { if (e.target && e.target.id === 'zsw') { e.stopPropagation(); location.hash = e.target.value; location.reload(); } }, true);
 function fatal(msg) { root.innerHTML = '<div class="center"><div class="stack" style="max-width:380px"><h1>Kein Zugang</h1><p class="muted">' + esc(msg) + '</p></div></div>'; }
 function paint(html) {
   const ae = document.activeElement, fid = ae && ae.id, sel = ae && ae.selectionStart !== undefined && ae.selectionStart !== null ? [ae.selectionStart, ae.selectionEnd] : null;
@@ -1057,7 +1067,7 @@ function shell(body) {
     const nw = CS.cache[a.id] && !a.archived ? news(CS.cache[a.id]) : null, nn = nw ? nw.notes.length + nw.checks.length : 0;
     return `<button class="ath" data-a="sel" data-v="${a.id}" aria-pressed="${CS.page === 'athlete' && CS.sel === a.id}"><span class="av s-${s}">${esc(ini)}${nn ? `<span class="badge" title="${nn} neu: Notizen oder Check-in">${nn}</span>` : ''}</span><span class="ai"><span class="row" style="justify-content:space-between;gap:6px;flex-wrap:nowrap"><b>${esc(a.name)}</b><span class="pill s-${s}">${a.archived ? 'archiviert' : a.last ? (age === 0 ? 'heute' : age === 1 ? 'gestern' : 'vor ' + age + ' T') : 'neu'}</span></span><span class="small muted">${a.last ? a.week + ' von 7 Tagen eingetragen' : 'noch keine Einträge'}</span></span></button>`; }).join('');
   const arch = CS.list.some(a => a.archived);
-  return `<header class="top"><div class="top-in"><span class="brand"><span class="logo">${ico('pulse')}</span>Coaching</span>${statusHtml()}<span class="sp"></span>
+  return `<header class="top"><div class="top-in"><span class="brand"><span class="logo">${ico('pulse')}</span>Coaching</span>${statusHtml()}<span class="sp"></span>${zSwitch()}
     <button class="ic" data-a="undo" ${CS.undo.length && CS.page === 'athlete' ? '' : 'disabled'} title="Letzte Änderung zurücknehmen">${ico('undo')}Rückgängig</button>
     <button class="ic ${CS.page === 'db' ? 'pri' : ''}" data-a="page" data-v="db" title="Vorlagen, Lebensmittel und Übungen">${ico('book')}Bibliothek</button></div></header>
   <main class="wrap">${CS.cur && CS.cur.saveErr && CS.page === 'athlete' ? `<div class="banner row" style="margin-bottom:14px"><span>${esc(CS.cur.saveErr)}</span><span class="sp"></span><button data-a="retry">Erneut speichern</button><button class="ghost" data-a="reload">Seite neu laden</button></div>` : ''}
@@ -1302,7 +1312,7 @@ function tabZug() {
   const p = pr(), a = p.athlete, li = CS.list.find(x => x.id === CS.cur.id) || {}, link = alink(CS.cur.token);
   return `<div class="card stack"><div class="row"><h2>Zugang</h2><span class="sp"></span>${li.archived ? '<span class="pill s-none">archiviert</span>' : ''}</div>
     <div class="fld"><span class="lbl">Persönlicher Link für den Athleten (wie ein Passwort behandeln)</span><input id="lk" readonly value="${esc(link)}" style="font-family:ui-monospace,Consolas,monospace;font-size:12px"></div>
-    <div class="row"><button class="pri" data-a="copy">Link kopieren</button>
+    <div class="row"><button class="pri" data-a="copy">Link kopieren</button>${BOOT.web ? `<button class="ghost" onclick="location.hash='k=${esc(CS.cur.token)}';location.reload()" title="Öffnet die Athleten-Ansicht hier; oben kannst du danach zwischen Coach und Athlet wechseln">Auf diesem Gerät öffnen</button>` : ''}
       ${CS.confirm === 'token' ? '<span class="small">Der alte Link funktioniert danach nicht mehr.</span><button class="pri" data-a="token">Ja, neuen Link</button><button class="ghost" data-a="confirm" data-v="">Abbrechen</button>' : '<button class="ghost" data-a="confirm" data-v="token">Neuen Link erzeugen</button>'}
       <span class="sp"></span><button class="ghost" data-a="archive">${li.archived ? 'Wieder aktivieren' : 'Archivieren'}</button>
       ${CS.confirm === 'del' ? '' : '<button class="ghost danger" data-a="confirm" data-v="del">Athlet löschen</button>'}</div>
@@ -1918,7 +1928,8 @@ function aRender() {
   if (!tabs.some(t => t[0] === AS.tab)) AS.tab = tabs.length ? tabs[0][0] : '';
   const nb = (k, t) => `<button data-a="tab" data-v="${k}" aria-pressed="${AS.tab === k}">${ico({ heute: 'edit', food: 'food', train: 'gym', hist: 'chart' }[k] || 'note')}<span>${t}</span></button>`;
   const body = ({ heute: aToday, food: aFood, train: aTrain, hist: aHist }[AS.tab] || (() => '<div class="card muted">Dein Coach richtet gerade alles ein.</div>'))();
-  paint(`<div class="page"><div class="hd"><div class="small muted">${fd(TODAY)}${p.modules.monitoring && st.label ? ' · ' + esc(st.label) : ''}</div><h1>Hallo ${esc(first)}</h1></div>
+  zName(first || 'Athlet');
+  paint(`<div class="page"><div class="hd"><div class="row" style="align-items:flex-start"><div><div class="small muted">${fd(TODAY)}${p.modules.monitoring && st.label ? ' · ' + esc(st.label) : ''}</div><h1>Hallo ${esc(first)}</h1></div><span class="sp"></span>${zSwitch()}</div></div>
     <div class="bd">${body}</div>${tabs.length > 1 ? `<nav class="nav"><div style="--n:${tabs.length}">${tabs.map(t => nb(t[0], t[1])).join('')}</div></nav>` : ''}</div>`);
   const ds = root.querySelector('.days'); if (ds) { ds.scrollLeft = ds.scrollWidth; const sb = ds.querySelector('[aria-pressed="true"]'); if (sb && sb.offsetLeft < ds.scrollLeft) ds.scrollLeft = sb.offsetLeft - 8; }
 }
@@ -2172,7 +2183,7 @@ if (BOOT && BOOT.web && BOOT.mode === 'none') {
 }
 else if (!BOOT || BOOT.mode === 'none') fatal('Bitte öffne die App über deinen persönlichen Link.');
 else if (BOOT.mode === 'setup') root.innerHTML = `<div class="center"><div class="stack card" style="max-width:520px;text-align:left"><h1>Dein Coach-Link</h1><p class="muted">Diesen Link als Lesezeichen speichern – er ist dein Zugang. Wer ihn hat, kann alles sehen und ändern.</p><input readonly value="${esc(BOOT.url + '?coach=' + BOOT.key)}" onclick="this.select()"><a href="${esc(BOOT.url + '?coach=' + BOOT.key)}" target="_top"><button class="pri">Coach-Ansicht öffnen</button></a></div></div>`;
-else if (BOOT.mode === 'coach') cBoot();
+else if (BOOT.mode === 'coach') { zName('Coach'); cBoot(); }
 else aStart();
 })();
 

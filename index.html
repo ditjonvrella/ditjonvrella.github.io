@@ -368,11 +368,11 @@ button.ic:has(.ico:only-child){padding:5px 6px} .handle .ico{width:16px;height:1
 </style></head>
 <body>
 <div id="app"><div class="center"><div class="spin" aria-label="Lädt"></div></div></div>
-<script>(function(){var S='coaching-zugang',h=new URLSearchParams(location.hash.slice(1)),q=new URLSearchParams(location.search),k=h.get('k')||q.get('k'),c=h.get('coach')||q.get('coach');
+<script>(function(){var A=/\/coach\//.test(location.pathname)?'coach':'athlet',S='coaching-zugang-'+A,ZL='coaching-zugaenge-'+A,h=new URLSearchParams(location.hash.slice(1)),q=new URLSearchParams(location.search),k=h.get('k')||q.get('k'),c=h.get('coach')||q.get('coach');
 if(q.get('k')||q.get('coach'))history.replaceState(null,'',location.pathname+'#'+(c?'coach='+c:'k='+k));
-if(k||c){try{localStorage.setItem(S,JSON.stringify({k:k,c:c}));var L=JSON.parse(localStorage.getItem('coaching-zugaenge')||'[]'),key=c||k;if(!L.some(function(x){return x.key===key}))L.push({t:c?'coach':'k',key:key});localStorage.setItem('coaching-zugaenge',JSON.stringify(L))}catch(e){}}else{try{var s=JSON.parse(localStorage.getItem(S)||'null');if(s){k=s.k;c=s.c}}catch(e){}}
-var b={url:"https://script.google.com/macros/s/AKfycbwpixdlX2r63QFM-tyJAu-kmKOuDXerJZbf7whJlng1m8XPS75qWWd-bSGf48vBlWWK6w/exec",web:"https://ditjonvrella.github.io/",api:"https://script.google.com/macros/s/AKfycbwpixdlX2r63QFM-tyJAu-kmKOuDXerJZbf7whJlng1m8XPS75qWWd-bSGf48vBlWWK6w/exec",v:"2.4.1"};
-b.mode=c?'coach':k?'athlete':'none';b.key=c||k||'';window.BOOT=b;})();</script>
+if(k||c){try{localStorage.setItem(S,JSON.stringify({k:k,c:c}));var L=JSON.parse(localStorage.getItem(ZL)||'[]'),key=c||k;if(!L.some(function(x){return x.key===key}))L.push({t:c?'coach':'k',key:key});localStorage.setItem(ZL,JSON.stringify(L))}catch(e){}}else{try{var s=JSON.parse(localStorage.getItem(S)||'null');if(s){k=s.k;c=s.c}}catch(e){}}
+var b={url:"https://script.google.com/macros/s/AKfycbwpixdlX2r63QFM-tyJAu-kmKOuDXerJZbf7whJlng1m8XPS75qWWd-bSGf48vBlWWK6w/exec",web:"https://ditjonvrella.github.io/",api:"https://script.google.com/macros/s/AKfycbwpixdlX2r63QFM-tyJAu-kmKOuDXerJZbf7whJlng1m8XPS75qWWd-bSGf48vBlWWK6w/exec",v:"2.4.2"};
+b.mode=c?'coach':k?'athlete':'none';b.key=c||k||'';b.zl=ZL;b.app=A;window.BOOT=b;})();</script>
 <script>
 /* Coaching App – Rechenkern (läuft im Browser und in den Node-Tests). Keine DOM-Zugriffe.
  * Modell v2: Blöcke (Diät/Aufbau/Erhalt) laufen nacheinander; Urlaub/Krank/Pause liegen als Zeitraum darüber (Kurve flach).
@@ -867,7 +867,7 @@ function toast(msg, undoFn) {
 /** Athleten-Link: neue Web-Adresse (Schlüssel hinter #, geht nicht an den Server von GitHub), sonst Google-Adresse. */
 const alink = tok => BOOT.web ? BOOT.web + '#k=' + tok : BOOT.url + '?k=' + tok;
 /* Mehrere Zugänge auf einem Gerät (z. B. Coach + eigener Athlet): Liste in localStorage, Umschalter oben. */
-const ZK = 'coaching-zugaenge';
+const ZK = BOOT && BOOT.zl || 'coaching-zugaenge';
 function zList() { try { return JSON.parse(localStorage.getItem(ZK) || '[]'); } catch (e) { return []; } }
 function zName(n) { if (!BOOT.web) return; const l = zList(), e = l.find(x => x.key === BOOT.key); if (e && e.name !== n) { e.name = n; try { localStorage.setItem(ZK, JSON.stringify(l)); } catch (x) {} } }
 function zSwitch() { if (!BOOT.web) return ''; const l = zList(); if (l.length < 2) return '';
@@ -1312,7 +1312,7 @@ function tabZug() {
   const p = pr(), a = p.athlete, li = CS.list.find(x => x.id === CS.cur.id) || {}, link = alink(CS.cur.token);
   return `<div class="card stack"><div class="row"><h2>Zugang</h2><span class="sp"></span>${li.archived ? '<span class="pill s-none">archiviert</span>' : ''}</div>
     <div class="fld"><span class="lbl">Persönlicher Link für den Athleten (wie ein Passwort behandeln)</span><input id="lk" readonly value="${esc(link)}" style="font-family:ui-monospace,Consolas,monospace;font-size:12px"></div>
-    <div class="row"><button class="pri" data-a="copy">Link kopieren</button>${BOOT.web ? `<button class="ghost" onclick="location.hash='k=${esc(CS.cur.token)}';location.reload()" title="Öffnet die Athleten-Ansicht hier; oben kannst du danach zwischen Coach und Athlet wechseln">Auf diesem Gerät öffnen</button>` : ''}
+    <div class="row"><button class="pri" data-a="copy">Link kopieren</button>${BOOT.web ? `<button class="ghost" onclick="window.open('${esc(link)}','_blank')" title="Öffnet die Athleten-App (eigenes Symbol, getrennt von der Coach-App)">Athleten-App öffnen</button>` : ''}
       ${CS.confirm === 'token' ? '<span class="small">Der alte Link funktioniert danach nicht mehr.</span><button class="pri" data-a="token">Ja, neuen Link</button><button class="ghost" data-a="confirm" data-v="">Abbrechen</button>' : '<button class="ghost" data-a="confirm" data-v="token">Neuen Link erzeugen</button>'}
       <span class="sp"></span><button class="ghost" data-a="archive">${li.archived ? 'Wieder aktivieren' : 'Archivieren'}</button>
       ${CS.confirm === 'del' ? '' : '<button class="ghost danger" data-a="confirm" data-v="del">Athlet löschen</button>'}</div>
